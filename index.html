@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Evil Russian Push-Up Calculator</title>
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
-  <link rel="stylesheet" href="style.css" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Evil Russian Push-Up Calculator</title>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+<link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 <div class="container container-narrow py-4">
@@ -13,10 +13,9 @@
     <h1 class="mb-0 fadeIn">💀 <span class="emoji">Evil Russian Push-Up Calculator</span></h1>
     <button id="darkToggle" class="toggle-btn" type="button">🌙 Dark mode</button>
   </div>
-
   <div class="rule"></div>
 
-  <!-- Inputs -->
+  <!-- Inputs Section -->
   <section class="cardish fadeIn" style="animation-delay:.05s">
     <div class="row">
       <div class="col-md-4 mb-3">
@@ -38,71 +37,49 @@
         <small class="muted">No alerts within quiet hours.</small>
       </div>
     </div>
-
-    <div class="d-flex align-items-center">
-      <div class="mr-3"><span class="badge badge-soft" id="dayLabel">Day 1 • Monday</span></div>
-      <div class="mr-3"><span class="badge badge-soft" id="freqLabel">every 60 min</span></div>
-      <div><span class="badge badge-soft">set size: <span id="setSize" class="percent">3</span></span></div>
+    <div>
+      <span class="badge badge-soft" id="dayLabel">Day 1 • Monday</span>
+      <span class="badge badge-soft" id="freqLabel">every 60 min</span>
+      <span class="badge badge-soft">set size: <span id="setSize" class="percent">3</span></span>
     </div>
   </section>
 
-  <!-- Next set & Mark done -->
-  <section class="cardish fadeIn" style="animation-delay:.1s">
-    <div class="row align-items-center">
-      <div class="col-md-6 mb-3 mb-md-0">
-        <div class="muted">Next set</div>
-        <div class="countdown" id="nextDue">calculating…</div>
-        <div class="small muted" id="dueExplain"></div>
-      </div>
-      <div class="col-md-6 text-md-right">
-        <button id="markDone" class="btn btn-lg btn-dark toggle-btn" type="button">✓ Mark set as done</button>
+  <!-- Overview of the Day -->
+  <section class="cardish fadeIn" style="animation-delay:.1s" id="overviewSection">
+    <h4 class="mb-3">Overview of the Day</h4>
+    <div class="mb-3" id="todayPrescription">
+      Do <span class="percent" id="todayPercent">30%</span> of your max every <span id="todayEvery">60</span> minutes.
+      <div class="muted" id="todayNote"></div>
+    </div>
+    <div class="mb-3">
+      <strong>Next set:</strong> <span class="countdown" id="nextDue">calculating…</span>
+      <div class="small muted" id="dueExplain"></div>
+    </div>
+    <div class="mb-3">
+      <div class="muted">Progress</div>
+      <div class="h5 mb-1"><span id="setsToday">0</span> sets • <span id="repsToday">0</span> reps</div>
+      <div class="progress mb-2">
+        <div id="progressBar" class="progress-bar" role="progressbar" style="width:0%"></div>
       </div>
     </div>
-  </section>
-
-  <!-- Today's prescription -->
-  <section class="cardish fadeIn" style="animation-delay:.15s">
-    <h5 class="mb-3">Today’s prescription</h5>
-    <div id="todayPlan" class="lead">
-      Do <span class="percent" id="todayPercent">30%</span> of your max (~<span id="todayReps">3</span> reps) every <span id="todayEvery">60</span> minutes.
-    </div>
-    <div class="mt-2 muted" id="todayNote"></div>
-  </section>
-
-  <!-- Overview of the Day (combined) -->
-  <section id="dayOverview" class="cardish fadeIn" style="animation-delay:.18s">
-    <div class="row">
-      <div class="col-md-6">
-        <div class="muted">Overview</div>
-        <div class="h3 mb-1"><span id="setsToday">0</span> sets • <span id="repsToday">0</span> reps</div>
-
-        <div class="muted">Progress</div>
-        <div class="progress" style="height:18px; border-radius:12px; overflow:hidden; margin-bottom:.75rem">
-          <div id="progressBar" class="progress-bar" role="progressbar" style="width:0%"></div>
-        </div>
-
-        <div class="muted">Next set</div>
-        <div class="countdown" id="nextDueMini">calculating…</div>
-        <small class="muted" id="dueExplainMini"></small>
-      </div>
-
-      <div class="col-md-6">
-        <div class="muted mb-2">Today's schedule (tick when done)</div>
-        <ul id="timeSlots" class="timeSlotsList"></ul>
-      </div>
+    <div>
+      <h6>Today's Schedule</h6>
+      <div id="scheduleList" class="schedule-list"></div>
     </div>
   </section>
 
   <!-- Week Overview -->
-  <section class="cardish fadeIn" style="animation-delay:.22s">
+  <section class="cardish fadeIn" style="animation-delay:.2s">
     <h5 class="mb-3">Week Overview</h5>
     <pre class="mb-0" id="schedulePreview" style="white-space:pre-wrap"></pre>
   </section>
 
-  <footer class="text-center mt-4">Built with sweat, pain, cookies 🍪 and a little CSS magic 💪</footer>
+  <footer class="text-center mt-4">
+    Built with sweat, pain, cookies 🍪 and a little CSS magic 💪
+  </footer>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="app.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
