@@ -1,26 +1,11 @@
-function setCookie(name, value, days) {
-  const d = new Date();
-  d.setTime(d.getTime() + days * 24 * 60 * 60 * 1000);
-  document.cookie = `${name}=${encodeURIComponent(value)};expires=${d.toUTCString()};path=/`;
-}
-function getCookie(name) {
-  const m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\/+^])/g, '\\$1') + '=([^;]*)'));
-  return m ? decodeURIComponent(m[1]) : null;
-}
-function save(key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
-  setCookie(key, JSON.stringify(val), 365);
-}
-function load(key, def) {
-  try {
-    const v = localStorage.getItem(key);
-    if (v) return JSON.parse(v);
-  } catch (e) {}
-  const c = getCookie(key);
-  return c ? JSON.parse(c) : def;
-}
+/* storage helpers */
+function setCookie(name,value,days){const d=new Date();d.setTime(d.getTime()+days*24*60*60*1000);document.cookie=`${name}=${encodeURIComponent(value)};expires=${d.toUTCString()};path=/`}
+function getCookie(name){const m=document.cookie.match(new RegExp('(?:^|; )'+name.replace(/([.$?*|{}()\\[\\]\\\\/+^])/g,'\\$1')+'=([^;]*)'));return m?decodeURIComponent(m[1]):null}
+function save(key,val){try{localStorage.setItem(key,JSON.stringify(val))}catch(e){}setCookie(key,JSON.stringify(val),365)}
+function load(key,def){try{const v=localStorage.getItem(key);if(v) return JSON.parse(v)}catch(e){}const c=getCookie(key);return c?JSON.parse(c):def}
 
-const SCHEDULE = [
+/* schedule / constants */
+const SCHEDULE=[
   {label:'Week 1 • Monday',pct:1.00,every:null,note:'Initial max test. After testing, use 30% every 60 min.'},
   {label:'Week 1 • Tuesday',pct:0.50,every:60},
   {label:'Week 1 • Wednesday',pct:0.60,every:45},
@@ -38,205 +23,304 @@ const SCHEDULE = [
   {label:'Week 3 • Monday',pct:1.00,every:null,note:'Re-test your max and plan next block.'}
 ];
 
+/* application state */
 const state = {
   base: load('erc_base', 10),
   startDate: load('erc_start', null),
   quietStart: load('erc_qstart', '22:00'),
   quietEnd: load('erc_qend', '07:00'),
   lastDoneISO: load('erc_lastDoneISO', null),
-  setsToday: load('erc_setsToday', 0),
-  repsToday: load('erc_repsToday', 0),
+  completedSlots: load('erc_completedSlots', []), // array of "YYYY-MM-DD|HH:MM" to keep per-day uniqueness
+  manualCompletions: load('erc_manualCompletions', 0), // counts from "Mark set done" button
   todayStr: null,
   dark: load('erc_dark', false)
 };
 
-const $base = $('#base'),
-      $start = $('#start'),
-      $quietStart = $('#quietStart'),
-      $quietEnd = $('#quietEnd'),
-      $dayLabel = $('#dayLabel'),
-      $freqLabel = $('#freqLabel'),
-      $setSize = $('#setSize'),
-      $todayPercent = $('#todayPercent'),
-      $todayEvery = $('#todayEvery'),
-      $todayNote = $('#todayNote'),
-      $nextDue = $('#nextDue'),
-      $dueExplain = $('#dueExplain'),
-      $setsToday = $('#setsToday'),
-      $repsToday = $('#repsToday'),
-      $progressBar = $('#progressBar'),
-      $schedulePreview = $('#schedulePreview');
+/* jquery handles */
+const $base = $('#base'), $start = $('#start'), $quietStart = $('#quietStart'), $quietEnd = $('#quietEnd');
+const $dayLabel = $('#dayLabel'), $freqLabel = $('#freqLabel'), $setSize = $('#setSize');
+const $todayPercent = $('#todayPercent'), $todayReps = $('#todayReps'), $todayEvery = $('#todayEvery'), $todayNote = $('#todayNote');
+const $nextDue = $('#nextDue'), $dueExplain = $('#dueExplain');
+const $setsToday = $('#setsToday'), $repsToday = $('#repsToday'), $progressBar = $('#progressBar');
+const $schedulePreview = $('#schedulePreview'), $timeSlots = $('#timeSlots');
+const $nextDueMini = $('#nextDueMini'), $dueExplainMini = $('#dueExplainMini');
 
-function applyDark(on) {
-  document.body.classList.toggle('dark', !!on);
-  $('#darkToggle').text(on ? '☀️ Light mode' : '🌙 Dark mode');
-  save('erc_dark', !!on);
-}
+/* helpers */
+function applyDark(on){document.body.classList.toggle('dark',!!on);$('#darkToggle').text(on?'☀️ Light mode':'🌙 Dark mode');save('erc_dark',!!on)}
+function todayKey(d=new Date()){return d.toISOString().slice(0,10)}
+function daySlotKey(dateStr,time){return `${dateStr}|${time}`} // unique slot id
+function parseHM(hm){const [h,m]=hm.split(':').map(Number);return {h,m}}
+function minutesToHM(min){const h=Math.floor(min/60)%24;const m=min%60;return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`}
+function setSizeFrom(base,pct){return Math.max(1,Math.round(base*pct))}
 
-function todayKey(d = new Date()) { return d.toISOString().slice(0, 10); }
-function parseHM(hm) { const [h, m] = hm.split(':').map(Number); return {h, m}; }
-function inQuietHours(now, qStart, qEnd) {
-  const {h:hs,m:ms} = parseHM(qStart);
-  const {h:he,m:me} = parseHM(qEnd);
-  const start = new Date(now); start.setHours(hs,ms,0,0);
-  const end = new Date(now); end.setHours(he,me,0,0);
-  if (end <= start) return now >= start || now <= end;
-  return now >= start && now <= end;
-}
-function daysBetween(a,b) {
-  const ms = 86400000;
-  const da = new Date(a); da.setHours(0,0,0,0);
-  const db = new Date(b); db.setHours(0,0,0,0);
-  return Math.floor((db - da) / ms);
-}
-function currentSchedule() {
-  if (!state.startDate) {
-    return {index:0,spec:SCHEDULE[0],effectivePct:0.30,every:60,needsTest:true};
-  }
-  const idx = Math.max(0, Math.min(14, daysBetween(state.startDate,new Date())));
-  const spec = SCHEDULE[Math.min(idx,SCHEDULE.length-1)];
-  let effectivePct = spec.pct;
-  let every = spec.every;
-  let needsTest = false;
-  if (spec.every === null) {
-    needsTest = true;
-    if (idx === 0) { effectivePct = 0.30; every = 60; }
-    else if (idx === 7) { effectivePct = 0.35; every = 45; }
-    else { every = 60; }
+/* schedule math helpers */
+function daysBetween(a,b){const ms=86400000;const da=new Date(a);da.setHours(0,0,0,0);const db=new Date(b);db.setHours(0,0,0,0);return Math.floor((db-da)/ms)}
+function currentSchedule(){
+  if(!state.startDate) return {index:0,spec:SCHEDULE[0],effectivePct:0.30,every:60,needsTest:true};
+  const idx=Math.max(0,Math.min(14,daysBetween(state.startDate,new Date())));
+  const spec=SCHEDULE[Math.min(idx,SCHEDULE.length-1)];
+  let effectivePct=spec.pct, every=spec.every, needsTest=false;
+  if(spec.every===null){
+    needsTest=true;
+    if(idx===0){ effectivePct=0.30; every=60 }
+    else if(idx===7){ effectivePct=0.35; every=45 }
+    else { every=60 }
   }
   return {index:idx,spec,effectivePct,every,needsTest};
 }
-function setSizeFrom(base,pct){ return Math.max(1, Math.round(base * pct)); }
 
-function calculateActiveMinutes() {
-  const {h:qs,m:ms} = parseHM(state.quietStart);
-  const {h:qe,m:me} = parseHM(state.quietEnd);
-  const start = qs * 60 + ms;
-  const end = qe * 60 + me;
-  const totalMinutes = 24 * 60;
-  if (end > start) return totalMinutes - (end - start);
-  return end + (totalMinutes - start);
+/* compute active intervals in minutes [start,end) where sets are allowed (0..1440) */
+function getActiveIntervals(){
+  const {h:qs,m:qm}=parseHM(state.quietStart);
+  const {h:qe,m:qm2}=parseHM(state.quietEnd);
+  const qStart = qs*60 + qm;
+  const qEnd = qe*60 + qm2;
+  const total = 24*60;
+  const intervals=[];
+  if(qStart < qEnd){
+    // quiet within same day -> active = [0,qStart) and [qEnd,1440)
+    if(qStart>0) intervals.push({start:0,end:qStart});
+    if(qEnd<total) intervals.push({start:qEnd,end:total});
+  } else if(qStart > qEnd){
+    // quiet crosses midnight -> active = [qEnd,qStart)
+    if(qEnd < qStart) intervals.push({start:qEnd,end:qStart});
+  } else {
+    // qStart == qEnd -> quiet full day (unlikely) => no active intervals
+    // treat as no active minutes
+  }
+  return intervals;
 }
 
-function prettySchedule() {
-  let html = 'Week 1\n';
-  for (let i = 0; i < 7; i++) {
-    const day = SCHEDULE[i];
-    html += formatDay(day);
-  }
-  html += '\nWeek 2\n';
-  for (let i = 7; i < 14; i++) {
-    const day = SCHEDULE[i];
-    html += formatDay(day);
-  }
-  html += '\nWeek 3\nMon Test (max effort)';
-  return html;
+/* generate today slots (array of "HH:MM" strings) based on schedule and active intervals */
+function generateSlotsForToday(){
+  const cs = currentSchedule();
+  if(!cs.every) return []; // test day => none
+  const intervals = getActiveIntervals();
+  const slots=[];
+  intervals.forEach(iv=>{
+    // start at iv.start, step by cs.every, ensure slot < iv.end
+    // we want reasonable first slot: round up to next multiple based on iv.start
+    let t = iv.start;
+    // produce slots starting at t, then t + every, etc.
+    while(t < iv.end){
+      slots.push(minutesToHM(t));
+      t += cs.every;
+    }
+  });
+  // remove duplicates & sort
+  const uniq = Array.from(new Set(slots));
+  uniq.sort();
+  return uniq;
 }
 
-function formatDay(day) {
-  if (day.every) {
-    return `${day.label.split('•')[1].trim()} ${Math.round(day.pct*100)}% → ~${setSizeFrom(state.base, day.pct)} reps every ${day.every} min\n`;
-  }
-  return `${day.label.split('•')[1].trim()} Test (max effort)\n`;
+/* compute expectedSets for today based on active minutes and frequency */
+function computeExpectedSets(cs){
+  if(!cs.every) return 0;
+  const intervals = getActiveIntervals();
+  let total = 0;
+  intervals.forEach(iv => total += Math.max(0, iv.end - iv.start));
+  if(total <= 0) return 0;
+  return Math.max(1, Math.floor(total / cs.every));
 }
 
-function resetIfNewDay() {
-  const key = todayKey();
-  if (state.todayStr !== key) {
-    state.todayStr = key;
-    state.setsToday = 0;
-    state.repsToday = 0;
-    save('erc_setsToday',0);
-    save('erc_repsToday',0);
+/* compute completed counts from state.completedSlots (only count today's entries) + manual completions */
+function computeTodayCounts(){
+  const today = todayKey();
+  const slotPrefix = today + '|';
+  const completedForToday = state.completedSlots.filter(s => s.startsWith(slotPrefix)).length;
+  const sets = completedForToday + (state.manualCompletions || 0);
+  const cs = currentSchedule();
+  const repsPerSet = setSizeFrom(state.base, cs.effectivePct);
+  return {sets, reps: sets * repsPerSet, completedForToday};
+}
+
+/* render week overview dynamically (percentages and reps) */
+function prettySchedule(){
+  // build readable schedule showing percent and computed reps based on base
+  let out = '';
+  out += 'Week 1\n';
+  for(let i=0;i<7;i++){
+    const d=SCHEDULE[i];
+    out += formatWeekLine(d);
+  }
+  out += '\nWeek 2\n';
+  for(let i=7;i<14;i++){
+    const d=SCHEDULE[i];
+    out += formatWeekLine(d);
+  }
+  out += '\nWeek 3\nMon 100% test';
+  return out;
+}
+function formatWeekLine(d){
+  const dayName = d.label.split('•')[1].trim();
+  if(d.every){
+    return `${dayName} ${Math.round(d.pct*100)}% → ~${setSizeFrom(state.base,d.pct)} reps every ${d.every} min\n`;
+  } else {
+    // use note where present to show the after-test prescription
+    return `${dayName} Test day${d.note ? ' — ' + d.note : ''}\n`;
   }
 }
 
-function refreshUI() {
-  resetIfNewDay();
-  $schedulePreview.text(prettySchedule());
+/* render the time slot list with checkboxes for today */
+function renderTimeSlots(){
+  const today = todayKey();
+  const slots = generateSlotsForToday();
+  if(slots.length === 0){
+    $timeSlots.html(`<li class="text-muted">No scheduled sets today (test day or quiet hours cover whole day)</li>`);
+    return;
+  }
+  const html = slots.map(t=>{
+    const key = daySlotKey(today,t);
+    const checked = state.completedSlots.includes(key) ? 'checked' : '';
+    return `<li><label><input type="checkbox" data-time="${t}" ${checked}/> <span class="slotTime">${t}</span> <span class="slotNote">~${setSizeFrom(state.base,currentSchedule().effectivePct)} reps</span></label></li>`;
+  }).join('');
+  $timeSlots.html(html);
+}
+
+/* compute next due time (next unchecked slot or next allowed time) */
+function computeNextDue(){
+  const now = new Date();
+  const today = todayKey();
+  const slots = generateSlotsForToday();
+  // find first slot that is >= current time and not completed
+  for(const t of slots){
+    const [hh,mm]=t.split(':').map(Number);
+    const dt = new Date();
+    dt.setHours(hh,mm,0,0);
+    // if slot time already passed, skip
+    if(dt.getTime() < now.getTime()) continue;
+    const key = daySlotKey(today,t);
+    if(!state.completedSlots.includes(key)) return dt;
+  }
+  // if none found later today, maybe next day's first slot — return null (we'll show ready/none)
+  return null;
+}
+
+/* update UI */
+function refreshUI(){
+  // ensure today reset logic (completed slots are per-day keys so no auto-reset needed)
   $base.val(state.base);
-  if (state.startDate) {
-    const d = new Date(state.startDate);
-    $start.val(d.toISOString().slice(0,10));
-  }
+  if(state.startDate) $start.val(new Date(state.startDate).toISOString().slice(0,10));
   $quietStart.val(state.quietStart);
   $quietEnd.val(state.quietEnd);
 
   const cs = currentSchedule();
   $dayLabel.text(cs.spec.label.split('•')[1].trim());
   $freqLabel.text(cs.needsTest ? 'test today' : `every ${cs.every} min`);
-  $setSize.text(setSizeFrom(state.base, cs.effectivePct));
+  const setSize = setSizeFrom(state.base, cs.effectivePct);
+  $setSize.text(setSize);
   $todayPercent.text(`${Math.round(cs.effectivePct*100)}%`);
-  $todayEvery.text(cs.every);
+  $todayReps.text(setSize);
+  $todayEvery.text(cs.every || '—');
   $todayNote.text(cs.spec.note || '');
-  $setsToday.text(state.setsToday);
-  $repsToday.text(state.repsToday);
 
-  const activeMinutes = calculateActiveMinutes();
-  const expectedSets = Math.max(1, Math.floor(activeMinutes / cs.every));
-  const progressPct = Math.min(100, (state.setsToday / expectedSets) * 100);
+  // week overview
+  $schedulePreview.text(prettySchedule());
+
+  // render slots and compute expected/actual
+  renderTimeSlots();
+  const expected = computeExpectedSets(cs);
+  const counts = computeTodayCounts();
+  $setsToday.text(counts.sets);
+  $repsToday.text(counts.reps);
+
+  // progress
+  let progressPct = expected > 0 ? Math.min(100, Math.round((counts.sets / expected) * 100)) : (counts.sets>0?100:0);
   $progressBar.css('width', progressPct + '%');
 
+  // next due (main countdown area)
+  const next = computeNextDue();
   const now = new Date();
-  if (!state.lastDoneISO) {
-    $nextDue.text('ready when you are');
-    $dueExplain.text('');
-  } else {
-    const last = new Date(state.lastDoneISO);
-    const next = new Date(last.getTime() + cs.every * 60000);
-    if (next <= now) {
-      $nextDue.text('NOW!');
-      $dueExplain.text('You can do a set right now.');
-      $nextDue.addClass('glow');
+  if(next){
+    const delta = next - now;
+    if(delta <= 0){
+      $('#nextDue').text('Due now!').addClass('glow');
+      $('#dueExplain').text('Time to drop and do your set.');
+      $nextDueMini.text('Due now!'); $dueExplainMini.text('Do your set.');
     } else {
-      const diff = next - now;
-      const mm = Math.floor(diff/60000), ss = Math.floor((diff%60000)/1000);
-      $nextDue.text(`${mm}:${String(ss).padStart(2,'0')}`);
-      $dueExplain.text(`Next due at ${next.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`);
-      $nextDue.removeClass('glow');
+      const h = Math.floor(delta / 3600000);
+      const m = Math.floor((delta % 3600000) / 60000);
+      const s = Math.floor((delta % 60000) / 1000);
+      const formatted = (h? (h+':') : '') + String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+      $('#nextDue').removeClass('glow').text(formatted);
+      $('#dueExplain').text(`Next scheduled at ${next.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`);
+      $nextDueMini.text(formatted);
+      $dueExplainMini.text(`Next at ${next.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`);
     }
+  } else {
+    $('#nextDue').removeClass('glow').text('No more scheduled sets today');
+    $('#dueExplain').text('');
+    $nextDueMini.text('No more today');
+    $dueExplainMini.text('');
   }
 }
 
-function recordSet() {
-  const cs = currentSchedule();
-  const reps = setSizeFrom(state.base, cs.effectivePct);
-  state.setsToday++;
-  state.repsToday += reps;
-  state.lastDoneISO = new Date().toISOString();
-  save('erc_setsToday', state.setsToday);
-  save('erc_repsToday', state.repsToday);
-  save('erc_lastDoneISO', state.lastDoneISO);
+/* mark a specific slot as done/undone */
+function toggleSlotForToday(time, checked){
+  const key = daySlotKey(todayKey(), time);
+  if(checked){
+    if(!state.completedSlots.includes(key)) state.completedSlots.push(key);
+  } else {
+    state.completedSlots = state.completedSlots.filter(s => s !== key);
+  }
+  save('erc_completedSlots', state.completedSlots);
   refreshUI();
-  $('#markDone').addClass('pop');
-  setTimeout(() => $('#markDone').removeClass('pop'), 350);
 }
 
-$(function(){
-  applyDark(state.dark);
+/* mark set done button: increments manualCompletions and store timestamp */
+function markSetDone(){
+  state.manualCompletions = (state.manualCompletions || 0) + 1;
+  state.lastDoneISO = new Date().toISOString();
+  save('erc_manualCompletions', state.manualCompletions);
+  save('erc_lastDoneISO', state.lastDoneISO);
+  // visual pop
+  $('#markDone').addClass('pop'); setTimeout(()=>$('#markDone').removeClass('pop'),350);
   refreshUI();
-  setInterval(refreshUI, 1000);
+}
 
+/* initialization & event wiring */
+$(function(){
+  // init fields
+  if(state.base) $base.val(state.base);
+  if(state.quietStart) $quietStart.val(state.quietStart);
+  if(state.quietEnd) $quietEnd.val(state.quietEnd);
+  if(state.startDate) $start.val(new Date(state.startDate).toISOString().slice(0,10));
+  applyDark(state.dark);
+
+  // default start to today if not set
+  if(!state.startDate){
+    const t = todayKey();
+    state.startDate = t;
+    save('erc_start', t);
+    $start.val(t);
+  }
+
+  // input handlers
   $base.on('input', function(){
-    state.base = parseInt(this.value,10) || 1;
+    state.base = Math.max(1, Math.round(Number($base.val()||1)));
     save('erc_base', state.base);
     refreshUI();
   });
   $start.on('change', function(){
-    state.startDate = this.value ? new Date(this.value).toISOString() : null;
+    state.startDate = $start.val() ? new Date($start.val()).toISOString() : null;
     save('erc_start', state.startDate);
     refreshUI();
   });
-  $quietStart.on('change', function(){
-    state.quietStart = this.value;
-    save('erc_qstart', state.quietStart);
-    refreshUI();
+  $quietStart.on('change', function(){ state.quietStart = $quietStart.val(); save('erc_qstart', state.quietStart); refreshUI(); });
+  $quietEnd.on('change', function(){ state.quietEnd = $quietEnd.val(); save('erc_qend', state.quietEnd); refreshUI(); });
+
+  $('#darkToggle').on('click', ()=>{ state.dark = !state.dark; applyDark(state.dark); });
+
+  // slot checkbox handler (delegated)
+  $timeSlots.on('change', 'input[type="checkbox"]', function(){
+    const t = $(this).data('time');
+    toggleSlotForToday(t, this.checked);
   });
-  $quietEnd.on('change', function(){
-    state.quietEnd = this.value;
-    save('erc_qend', state.quietEnd);
-    refreshUI();
-  });
-  $('#darkToggle').on('click', function(){ applyDark(!state.dark); state.dark = !state.dark; });
-  $('#markDone').on('click', recordSet);
+
+  // mark done button
+  $('#markDone').on('click', markSetDone);
+
+  // periodic UI refresh
+  refreshUI();
+  setInterval(refreshUI, 1000);
 });
