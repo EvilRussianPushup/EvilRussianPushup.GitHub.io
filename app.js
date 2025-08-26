@@ -42,7 +42,7 @@ const state = {
   quietStart: load('erc_qstart','22:00'),
   quietEnd: load('erc_qend','07:00'),
   lastDoneISO: load('erc_lastDoneISO',null),
-  completedSlots: load('erc_completedSlots',[]), // array "YYYY-MM-DD|HH:MM"
+  completedSlots: load('erc_completedSlots',[]),
   manualCompletions: load('erc_manualCompletions',0),
   dark: load('erc_dark',false)
 };
@@ -202,14 +202,12 @@ function markSetDone(){
 }
 
 $(function(){
-  // Initial fill
   if(state.base) $base.val(state.base);
   if(state.quietStart) $quietStart.val(state.quietStart);
   if(state.quietEnd) $quietEnd.val(state.quietEnd);
   if(state.startDate) $start.val(state.startDate); else {$start.val(todayKey()); state.startDate=todayKey(); save('erc_start',todayKey());}
   applyDark(state.dark); $schedulePreview.text(prettySchedule()); refreshUI();
 
-  // Inputs
   $base.on('input',()=>{state.base=Math.max(1,Math.round(Number($base.val()||1))); save('erc_base',state.base); refreshUI();});
   $start.on('change',()=>{state.startDate=$start.val(); save('erc_start',state.startDate); refreshUI();});
   $quietStart.on('change',()=>{state.quietStart=$quietStart.val(); save('erc_qstart',state.quietStart); refreshUI();});
@@ -217,7 +215,6 @@ $(function(){
   $('#darkToggle').on('click',()=>applyDark(!document.body.classList.contains('dark')));
   $('#markDone').on('click',markSetDone);
 
-  // Checkbox clicks
   $timeSlots.on('change','input[type="checkbox"]',function(){
     const time=$(this).data('time'); const key=daySlotKey(todayKey(),time);
     if(this.checked){ if(!state.completedSlots.includes(key)) state.completedSlots.push(key);}
@@ -225,6 +222,5 @@ $(function(){
     save('erc_completedSlots',state.completedSlots); refreshUI();
   });
 
-  // Ticker
   setInterval(refreshUI,1000);
 });
