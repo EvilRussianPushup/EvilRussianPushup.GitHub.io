@@ -15,6 +15,7 @@
   </div>
   <div class="rule"></div>
 
+  <!-- User Input Section -->
   <section class="cardish fadeIn" style="animation-delay:.05s">
     <div class="row">
       <div class="col-md-4 mb-3">
@@ -43,6 +44,7 @@
     </div>
   </section>
 
+  <!-- Next Set Countdown -->
   <section class="cardish fadeIn" style="animation-delay:.1s">
     <div class="row align-items-center">
       <div class="col-md-6 mb-3 mb-md-0">
@@ -56,6 +58,7 @@
     </div>
   </section>
 
+  <!-- Today's Prescription -->
   <section class="cardish fadeIn" style="animation-delay:.15s">
     <h5 class="mb-3">Today’s prescription</h5>
     <div id="todayPlan" class="lead">
@@ -64,6 +67,7 @@
     <div class="mt-2 muted" id="todayNote"></div>
   </section>
 
+  <!-- Progress & Week Overview -->
   <section class="cardish fadeIn" style="animation-delay:.2s">
     <div class="row align-items-center">
       <div class="col-md-6">
@@ -74,7 +78,10 @@
         <div class="progress"><div id="progressBar" class="progress-bar" role="progressbar" style="width:0%"></div></div>
         <small class="muted">Progress resets daily.</small>
       </div>
-      <div class="col-md-6"><pre class="mb-0" id="schedulePreview" style="white-space:pre-wrap"></pre></div>
+      <div class="col-md-6">
+        <div class="muted mb-2">Week Overview</div>
+        <pre class="mb-0" id="schedulePreview" style="white-space:pre-wrap"></pre>
+      </div>
     </div>
   </section>
 
