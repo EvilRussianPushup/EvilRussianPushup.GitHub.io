@@ -1,171 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Evil Russian Push-Up Calculator</title>
 
-<title>INTERVAL // CTRL</title>
-
-<!-- Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-
-<!-- Your CSS -->
-<link rel="stylesheet" href="style.css">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
 </head>
 
 <body>
+<div class="container container-narrow py-4">
 
-<header class="top">
-  <div class="brand">
-    <span class="logo">INTERVAL</span>
-    <span class="sep">//</span>
-    <span class="logo muted">CTRL</span>
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <h1 class="mb-0 fadeIn">💀 <span class="emoji">Evil Russian Push-Up Calculator</span></h1>
+    <button id="darkToggle" class="toggle-btn" type="button">🌙 Dark mode</button>
   </div>
-  <button id="darkToggle" class="icon-btn">◐</button>
-</header>
 
-<main class="grid">
+  <div class="rule"></div>
 
-  <!-- SETUP CARD -->
-  <section class="card" data-card="setup">
-    <header>
-      <h2>SETUP</h2>
-      <div class="card-controls">
-        <button data-action="collapse">—</button>
-        <button data-action="up">↑</button>
-        <button data-action="down">↓</button>
-      </div>
-    </header>
-
-    <div class="card-body">
-      <div class="field">
-        <label for="base">MAX PUSH-UPS</label>
-        <input id="base" type="number" min="1">
+  <!-- Inputs -->
+  <section class="cardish fadeIn">
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label for="base">Your max (100% test)</label>
+        <input id="base" type="number" class="form-control" min="1" step="1" />
+        <small class="muted">All-out strict push-ups.</small>
       </div>
 
-      <div class="field">
-        <label for="start">PROGRAM START</label>
-        <input id="start" type="date">
+      <div class="col-md-4 mb-3">
+        <label for="start">Program start date</label>
+        <input id="start" type="date" class="form-control" />
+        <small class="muted">Used to determine today.</small>
       </div>
 
-      <div class="field">
-        <label>QUIET HOURS</label>
-        <div class="inline">
-          <input id="quietStart" type="time">
-          <span class="muted">→</span>
-          <input id="quietEnd" type="time">
+      <div class="col-md-4 mb-3">
+        <label>Quiet hours</label>
+        <div class="d-flex">
+          <input id="quietStart" type="time" class="form-control mr-2">
+          <input id="quietEnd" type="time" class="form-control">
         </div>
+        <small class="muted">No reminders during sleep.</small>
       </div>
     </div>
   </section>
 
-  <!-- TODAY CARD -->
-  <section class="card" data-card="today">
-    <header>
-      <h2>TODAY</h2>
-      <div class="card-controls">
-        <button data-action="collapse">—</button>
-        <button data-action="up">↑</button>
-        <button data-action="down">↓</button>
-      </div>
-    </header>
-
-    <div class="card-body">
-      <div class="kv">
-        <div>
-          <span class="k">LOAD</span>
-          <span class="v"><span id="todayPercent">—</span></span>
-        </div>
-        <div>
-          <span class="k">INTERVAL</span>
-          <span class="v"><span id="todayEvery">—</span> min</span>
-        </div>
-      </div>
-
-      <div class="next">
-        <span class="k">NEXT SET</span>
-        <span class="countdown" id="nextDue">—</span>
-        <div class="muted small" id="dueExplain"></div>
-      </div>
-
-      <div class="note muted" id="todayNote"></div>
-
-      <button id="markDone" class="action-btn">MARK SET DONE</button>
-    </div>
+  <!-- Week Overview -->
+  <section class="cardish fadeIn">
+    <h5>Program Overview</h5>
+    <pre id="schedulePreview" class="muted mb-0"></pre>
   </section>
 
-  <!-- PROGRESS CARD -->
-  <section class="card" data-card="progress">
-    <header>
-      <h2>PROGRESS</h2>
-      <div class="card-controls">
-        <button data-action="collapse">—</button>
-        <button data-action="up">↑</button>
-        <button data-action="down">↓</button>
-      </div>
-    </header>
+  <!-- Today -->
+  <section class="cardish fadeIn">
 
-    <div class="card-body">
-      <div class="stats">
-        <div>
-          <span class="stat" id="setsToday">0</span>
-          <span class="label">SETS</span>
-        </div>
-        <div>
-          <span class="stat" id="repsToday">0</span>
-          <span class="label">REPS</span>
-        </div>
-      </div>
+    <h5 class="mb-3">
+      Today —
+      <span id="dayLabel" class="badge-soft"></span>
+      <span id="freqLabel" class="muted ml-2"></span>
+    </h5>
 
-      <div class="progress-track">
+    <div class="row align-items-center mb-4">
+      <div class="col-md-6">
+        <div class="muted">Next set</div>
+        <div id="nextDue" class="countdown"></div>
+        <div id="dueExplain" class="small muted"></div>
+      </div>
+      <div class="col-md-6 text-md-right mt-3 mt-md-0">
+        <button id="markDone" class="btn btn-lg btn-dark toggle-btn">
+          ✓ Mark set as done
+        </button>
+      </div>
+    </div>
+
+    <div class="mb-3 lead">
+      Do <span class="percent" id="todayPercent"></span>
+      (<strong><span id="setSize"></span> reps</strong>)
+      every <span id="todayEvery"></span> minutes
+    </div>
+
+    <div id="todayNote" class="muted mb-4"></div>
+
+    <div class="mb-3">
+      <div class="muted">Progress today</div>
+      <div class="h3 mb-1">
+        <span id="setsToday">0</span> sets •
+        <span id="repsToday">0</span> reps
+      </div>
+      <div class="progress">
         <div id="progressBar" class="progress-bar"></div>
       </div>
     </div>
-  </section>
 
-  <!-- SCHEDULE CARD -->
-  <section class="card" data-card="schedule">
-    <header>
-      <h2>SCHEDULE</h2>
-      <div class="card-controls">
-        <button data-action="collapse">—</button>
-        <button data-action="up">↑</button>
-        <button data-action="down">↓</button>
-      </div>
-    </header>
-
-    <div class="card-body">
-      <ul id="timeSlots"></ul>
+    <div>
+      <h6>Scheduled sets</h6>
+      <ul id="timeSlots" class="list-unstyled"></ul>
     </div>
   </section>
 
-  <!-- WEEK OVERVIEW (OPTIONAL / SECONDARY) -->
-  <section class="card" data-card="overview">
-    <header>
-      <h2>PROGRAM MAP</h2>
-      <div class="card-controls">
-        <button data-action="collapse">—</button>
-        <button data-action="up">↑</button>
-        <button data-action="down">↓</button>
-      </div>
-    </header>
+  <footer class="text-center mt-4">
+    Built with pain, discipline, and questionable life choices 💪
+  </footer>
 
-    <div class="card-body">
-      <pre id="schedulePreview"></pre>
-    </div>
-  </section>
+</div>
 
-</main>
-
-<footer class="footer muted">
-  INTERVAL // CTRL — discipline as a system
-</footer>
-
-<!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="app.js"></script>
-
 </body>
 </html>
