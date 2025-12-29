@@ -4,105 +4,87 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<title>IRON INTERVAL — Push-Up Protocol</title>
+<title>The Practice — Push-Up Discipline</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
-<link href="style.css" rel="stylesheet" />
+<link href="style.css" rel="stylesheet">
 </head>
 
 <body>
-<main class="app">
 
-  <!-- HEADER -->
-  <header class="topbar">
-    <div>
-      <h1>IRON INTERVAL</h1>
-      <p class="tagline">Relentless progress. One set at a time.</p>
-    </div>
-    <button id="darkToggle" class="mode-btn">MODE</button>
+<main class="page">
+
+  <header class="header">
+    <h1>The Practice</h1>
+    <p class="subtitle">A quiet system for daily strength</p>
+    <button id="darkToggle" class="mode">Change light</button>
   </header>
 
-  <!-- CONFIG -->
-  <section class="panel">
-    <h2>Protocol Setup</h2>
-    <div class="row">
-      <div class="col-md-4">
-        <label>Max push-ups</label>
-        <input id="base" type="number" class="form-control" />
+  <section class="section">
+    <h2>Setup</h2>
+
+    <div class="fields">
+      <div>
+        <label>Maximum push-ups</label>
+        <input id="base" type="number">
       </div>
-      <div class="col-md-4">
-        <label>Program start</label>
-        <input id="start" type="date" class="form-control" />
+
+      <div>
+        <label>Start date</label>
+        <input id="start" type="date">
       </div>
-      <div class="col-md-4">
+
+      <div>
         <label>Quiet hours</label>
-        <div class="d-flex">
-          <input id="quietStart" type="time" class="form-control mr-2">
-          <input id="quietEnd" type="time" class="form-control">
+        <div class="row">
+          <input id="quietStart" type="time">
+          <input id="quietEnd" type="time">
         </div>
       </div>
     </div>
   </section>
 
-  <!-- TODAY -->
-  <section class="panel hero">
+  <section class="section focus">
     <h2>Today</h2>
 
-    <div class="hero-grid">
-      <div class="hero-block">
-        <span class="hero-label">Set size</span>
-        <span class="hero-value"><span id="todayPercent"></span></span>
-      </div>
+    <p class="instruction">
+      Perform <strong><span id="todayPercent"></span></strong> of your maximum  
+      every <strong><span id="todayEvery"></span> minutes</strong>.
+    </p>
 
-      <div class="hero-block">
-        <span class="hero-label">Interval</span>
-        <span class="hero-value"><span id="todayEvery"></span> min</span>
-      </div>
-
-      <div class="hero-block">
-        <span class="hero-label">Next set</span>
-        <span class="hero-value countdown" id="nextDue"></span>
-      </div>
+    <div class="time">
+      <span class="label">Next set</span>
+      <span class="countdown" id="nextDue"></span>
     </div>
 
     <p class="note" id="todayNote"></p>
 
-    <button id="markDone" class="action-btn">SET COMPLETED</button>
+    <button id="markDone" class="done">Set completed</button>
   </section>
 
-  <!-- PROGRESS -->
-  <section class="panel">
-    <h2>Progress</h2>
+  <section class="section">
+    <h2>Progress today</h2>
 
-    <div class="stats">
-      <div>
-        <span class="stat-number" id="setsToday">0</span>
-        <span class="stat-label">Sets</span>
-      </div>
-      <div>
-        <span class="stat-number" id="repsToday">0</span>
-        <span class="stat-label">Reps</span>
-      </div>
-    </div>
+    <p class="numbers">
+      <span><strong id="setsToday">0</strong> sets</span>
+      <span><strong id="repsToday">0</strong> repetitions</span>
+    </p>
 
-    <div class="progress track">
-      <div id="progressBar" class="progress-bar"></div>
+    <div class="bar">
+      <div id="progressBar"></div>
     </div>
   </section>
 
-  <!-- SCHEDULE -->
-  <section class="panel">
-    <h2>Scheduled Sets</h2>
-    <ul id="timeSlots"></ul>
+  <section class="section">
+    <h2>Scheduled times</h2>
+    <ul id="timeSlots" class="times"></ul>
   </section>
 
-  <!-- FOOTER -->
   <footer>
-    Built for discipline. No excuses.
+    Discipline is quiet.
   </footer>
 
 </main>
