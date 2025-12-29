@@ -1,108 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🙏Evil Russian Push-Up Calculator</title>
-
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
-  <link href="style.css" rel="stylesheet">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Evil Russian Push-Up Calculator</title>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+<link href="style.css" rel="stylesheet" />
 </head>
-
 <body>
 <div class="container container-narrow py-4">
-
-  <!-- Header -->
-  <div class="d-flex align-items-center justify-content-between mb-2">
+  <div class="d-flex align-items-center justify-content-between">
     <h1 class="mb-0 fadeIn">💀 <span class="emoji">Evil Russian Push-Up Calculator</span></h1>
-    <button id="darkToggle" class="toggle-btn" type="button">🌙 Dark mode</button>
+    <button id="darkToggle" class="toggle-btn" type="button">🌙 DARK mode</button>
   </div>
 
   <div class="rule"></div>
 
-  <!-- Inputs -->
+  <!-- User Inputs -->
   <section class="cardish fadeIn">
     <div class="row">
       <div class="col-md-4 mb-3">
         <label for="base">Your max (100% test)</label>
-        <input id="base" type="number" class="form-control" min="1" step="1" />
-        <small class="muted">All-out strict push-ups.</small>
+        <input id="base" type="number" class="form-control" min="1" step="1" value="10" />
+        <small class="muted">Tip: do an all-out set, then enter the number.</small>
       </div>
-
       <div class="col-md-4 mb-3">
         <label for="start">Program start date</label>
         <input id="start" type="date" class="form-control" />
-        <small class="muted">Used to determine today.</small>
+        <small class="muted">Used to pick today’s prescription.</small>
       </div>
-
       <div class="col-md-4 mb-3">
-        <label>Quiet hours</label>
+        <label for="quiet">Quiet hours</label>
         <div class="d-flex">
-          <input id="quietStart" type="time" class="form-control mr-2">
-          <input id="quietEnd" type="time" class="form-control">
+          <input id="quietStart" type="time" class="form-control mr-2" value="22:00" />
+          <input id="quietEnd" type="time" class="form-control" value="07:00" />
         </div>
-        <small class="muted">No reminders during sleep.</small>
+        <small class="muted">No alerts within quiet hours.</small>
       </div>
     </div>
   </section>
 
   <!-- Week Overview -->
   <section class="cardish fadeIn">
-    <h5>Program Overview</h5>
-    <pre id="schedulePreview" class="muted mb-0"></pre>
+    <h5>Week Overview</h5>
+    <pre id="schedulePreview" style="white-space:pre-wrap"></pre>
   </section>
 
-  <!-- Today -->
+  <!-- Overview of the Day -->
   <section class="cardish fadeIn">
-
-    <h5 class="mb-3">
-      Today —
-      <span id="dayLabel" class="badge-soft"></span>
-      <span id="freqLabel" class="muted ml-2"></span>
-    </h5>
-
-    <div class="row align-items-center mb-4">
-      <div class="col-md-6">
+    <h5>Today’s Overview</h5>
+    <div class="row align-items-center mb-3">
+      <div class="col-md-6 mb-3 mb-md-0">
         <div class="muted">Next set</div>
-        <div id="nextDue" class="countdown"></div>
-        <div id="dueExplain" class="small muted"></div>
+        <div class="countdown" id="nextDue"></div>
+        <div class="small muted" id="dueExplain"></div>
       </div>
-      <div class="col-md-6 text-md-right mt-3 mt-md-0">
-        <button id="markDone" class="btn btn-lg btn-dark toggle-btn">
-          ✓ Mark set as done
-        </button>
+      <div class="col-md-6 text-md-right">
+        <button id="markDone" class="btn btn-lg btn-dark toggle-btn" type="button">✓ Mark set as done</button>
       </div>
     </div>
-
-    <div class="mb-3 lead">
-      Do <span class="percent" id="todayPercent"></span>
-      (<strong><span id="setSize"></span> reps</strong>)
-      every <span id="todayEvery"></span> minutes
-    </div>
-
-    <div id="todayNote" class="muted mb-4"></div>
 
     <div class="mb-3">
-      <div class="muted">Progress today</div>
-      <div class="h3 mb-1">
-        <span id="setsToday">0</span> sets •
-        <span id="repsToday">0</span> reps
-      </div>
-      <div class="progress">
-        <div id="progressBar" class="progress-bar"></div>
+      <div id="todayPlan" class="lead">Do <span class="percent" id="todayPercent">30%</span> of your max every <span id="todayEvery">60</span> minutes.</div>
+      <div class="mt-1 muted" id="todayNote"></div>
+    </div>
+
+    <div class="mb-3">
+      <div class="muted">Sets completed today</div>
+      <div class="h3 mb-1"><span id="setsToday">0</span> sets • <span id="repsToday">0</span> reps</div>
+      <div class="progress mb-2">
+        <div id="progressBar" class="progress-bar" role="progressbar" style="width:0%"></div>
       </div>
     </div>
 
     <div>
-      <h6>Scheduled sets</h6>
+      <h6>Scheduled times</h6>
       <ul id="timeSlots" class="list-unstyled"></ul>
     </div>
   </section>
 
-  <footer class="text-center mt-4">
-    Built with pain, discipline, and questionable life choices 💪
-  </footer>
-
+  <footer class="text-center mt-4">Built with sweat, pain, cookies 🍪 and a little CSS magic 💪</footer>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
