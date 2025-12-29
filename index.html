@@ -6,11 +6,17 @@
 
 <title>INTERVAL // CTRL</title>
 
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<link href="style.css" rel="stylesheet">
+
+<!-- Your CSS -->
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+
 <header class="top">
   <div class="brand">
     <span class="logo">INTERVAL</span>
@@ -22,57 +28,144 @@
 
 <main class="grid">
 
+  <!-- SETUP CARD -->
   <section class="card" data-card="setup">
     <header>
       <h2>SETUP</h2>
       <div class="card-controls">
-        <button>—</button>
-        <button>↑</button>
-        <button>↓</button>
+        <button data-action="collapse">—</button>
+        <button data-action="up">↑</button>
+        <button data-action="down">↓</button>
       </div>
     </header>
-    <!-- existing setup inputs go here -->
+
+    <div class="card-body">
+      <div class="field">
+        <label for="base">MAX PUSH-UPS</label>
+        <input id="base" type="number" min="1">
+      </div>
+
+      <div class="field">
+        <label for="start">PROGRAM START</label>
+        <input id="start" type="date">
+      </div>
+
+      <div class="field">
+        <label>QUIET HOURS</label>
+        <div class="inline">
+          <input id="quietStart" type="time">
+          <span class="muted">→</span>
+          <input id="quietEnd" type="time">
+        </div>
+      </div>
+    </div>
   </section>
 
+  <!-- TODAY CARD -->
   <section class="card" data-card="today">
     <header>
       <h2>TODAY</h2>
       <div class="card-controls">
-        <button>—</button>
-        <button>↑</button>
-        <button>↓</button>
+        <button data-action="collapse">—</button>
+        <button data-action="up">↑</button>
+        <button data-action="down">↓</button>
       </div>
     </header>
-    <!-- today overview -->
+
+    <div class="card-body">
+      <div class="kv">
+        <div>
+          <span class="k">LOAD</span>
+          <span class="v"><span id="todayPercent">—</span></span>
+        </div>
+        <div>
+          <span class="k">INTERVAL</span>
+          <span class="v"><span id="todayEvery">—</span> min</span>
+        </div>
+      </div>
+
+      <div class="next">
+        <span class="k">NEXT SET</span>
+        <span class="countdown" id="nextDue">—</span>
+        <div class="muted small" id="dueExplain"></div>
+      </div>
+
+      <div class="note muted" id="todayNote"></div>
+
+      <button id="markDone" class="action-btn">MARK SET DONE</button>
+    </div>
   </section>
 
+  <!-- PROGRESS CARD -->
   <section class="card" data-card="progress">
     <header>
       <h2>PROGRESS</h2>
       <div class="card-controls">
-        <button>—</button>
-        <button>↑</button>
-        <button>↓</button>
+        <button data-action="collapse">—</button>
+        <button data-action="up">↑</button>
+        <button data-action="down">↓</button>
       </div>
     </header>
-    <!-- stats -->
+
+    <div class="card-body">
+      <div class="stats">
+        <div>
+          <span class="stat" id="setsToday">0</span>
+          <span class="label">SETS</span>
+        </div>
+        <div>
+          <span class="stat" id="repsToday">0</span>
+          <span class="label">REPS</span>
+        </div>
+      </div>
+
+      <div class="progress-track">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+    </div>
   </section>
 
+  <!-- SCHEDULE CARD -->
   <section class="card" data-card="schedule">
     <header>
       <h2>SCHEDULE</h2>
       <div class="card-controls">
-        <button>—</button>
-        <button>↑</button>
-        <button>↓</button>
+        <button data-action="collapse">—</button>
+        <button data-action="up">↑</button>
+        <button data-action="down">↓</button>
       </div>
     </header>
-    <ul id="timeSlots"></ul>
+
+    <div class="card-body">
+      <ul id="timeSlots"></ul>
+    </div>
+  </section>
+
+  <!-- WEEK OVERVIEW (OPTIONAL / SECONDARY) -->
+  <section class="card" data-card="overview">
+    <header>
+      <h2>PROGRAM MAP</h2>
+      <div class="card-controls">
+        <button data-action="collapse">—</button>
+        <button data-action="up">↑</button>
+        <button data-action="down">↓</button>
+      </div>
+    </header>
+
+    <div class="card-body">
+      <pre id="schedulePreview"></pre>
+    </div>
   </section>
 
 </main>
 
+<footer class="footer muted">
+  INTERVAL // CTRL — discipline as a system
+</footer>
+
+<!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="app.js"></script>
+
 </body>
 </html>
