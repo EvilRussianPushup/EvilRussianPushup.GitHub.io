@@ -1,194 +1,172 @@
 :root {
-  --bg: #0b0d10;
-  --panel: #14171c;
-  --panel-soft: #1b1f26;
-  --text: #f5f7fa;
-  --muted: #8b8f97;
-  --accent: #ff2d2d;
-  --accent-glow: rgba(255,45,45,.6);
+  --bg: #f6f5f2;
+  --panel: #ffffff;
+  --text: #1f2933;
+  --muted: #6b7280;
+  --accent: #2f6f5e;
 }
 
-/* RESET */
-* { box-sizing: border-box; }
-
-/* BASE */
 body {
   margin: 0;
-  font-family: Inter, system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
+  font-family: Inter, system-ui, sans-serif;
 }
 
-.app {
-  max-width: 1100px;
+.page {
+  max-width: 820px;
   margin: auto;
-  padding: 32px 20px 60px;
+  padding: 72px 24px;
 }
 
 /* HEADER */
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 40px;
+.header {
+  margin-bottom: 80px;
 }
 
 h1 {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 3.5rem;
-  letter-spacing: 2px;
-  margin: 0;
+  font-family: "Libre Baskerville", serif;
+  font-size: 3.2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
 }
 
-.tagline {
+.subtitle {
   color: var(--muted);
-  font-size: .9rem;
-  letter-spacing: .1em;
-  text-transform: uppercase;
+  font-size: 1rem;
 }
 
-/* BUTTONS */
-.mode-btn,
-.action-btn {
-  background: var(--accent);
-  border: none;
-  color: #000;
-  font-weight: 800;
-  letter-spacing: .1em;
-  padding: 14px 22px;
-  border-radius: 10px;
-  cursor: pointer;
-  box-shadow: 0 0 20px var(--accent-glow);
-}
-
-.action-btn {
+.mode {
   margin-top: 24px;
-  width: 100%;
+  background: none;
+  border: 1px solid #ddd;
+  padding: 10px 14px;
+  font-size: .8rem;
+  cursor: pointer;
 }
 
-/* PANELS */
-.panel {
-  background: linear-gradient(180deg, var(--panel), var(--panel-soft));
-  border-radius: 18px;
-  padding: 28px;
-  margin-bottom: 28px;
-  box-shadow: 0 30px 80px rgba(0,0,0,.6);
+/* SECTIONS */
+.section {
+  margin-bottom: 96px;
 }
 
-.panel h2 {
-  font-family: 'Bebas Neue';
-  font-size: 2rem;
-  letter-spacing: 2px;
-  margin-bottom: 20px;
+.section h2 {
+  font-family: "Libre Baskerville", serif;
+  font-size: 1.6rem;
+  margin-bottom: 24px;
 }
 
 /* FORMS */
+.fields {
+  display: grid;
+  gap: 28px;
+  max-width: 520px;
+}
+
 label {
-  color: var(--muted);
+  display: block;
   font-size: .85rem;
+  color: var(--muted);
   margin-bottom: 6px;
 }
 
-.form-control {
-  background: #0f1216;
-  border: 1px solid #262a33;
-  color: var(--text);
-  border-radius: 12px;
+input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  background: #fff;
 }
 
-/* HERO */
-.hero {
-  border: 1px solid var(--accent);
-}
-
-.hero-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
-  gap: 20px;
-}
-
-.hero-block {
-  background: #0f1216;
-  border-radius: 14px;
-  padding: 20px;
-  text-align: center;
-}
-
-.hero-label {
-  display: block;
-  font-size: .75rem;
-  letter-spacing: .15em;
-  color: var(--muted);
-  text-transform: uppercase;
-}
-
-.hero-value {
-  font-size: 2.4rem;
-  font-weight: 800;
-  margin-top: 8px;
-}
-
-/* STATS */
-.stats {
+.row {
   display: flex;
-  justify-content: space-around;
-  margin-bottom: 20px;
+  gap: 12px;
 }
 
-.stat-number {
-  font-size: 2.6rem;
-  font-weight: 800;
+/* FOCUS (TODAY) */
+.focus {
+  border-left: 3px solid var(--accent);
+  padding-left: 32px;
+}
+
+.instruction {
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+
+.time {
+  margin-top: 28px;
+}
+
+.label {
   display: block;
+  font-size: .8rem;
+  color: var(--muted);
 }
 
-.stat-label {
+.countdown {
+  font-size: 2.4rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.note {
+  margin-top: 12px;
   color: var(--muted);
-  font-size: .8rem;
-  letter-spacing: .1em;
-  text-transform: uppercase;
+}
+
+/* BUTTON */
+.done {
+  margin-top: 36px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 14px 22px;
+  font-size: 1rem;
+  cursor: pointer;
 }
 
 /* PROGRESS */
-.track {
-  height: 12px;
-  background: #0f1216;
-  border-radius: 999px;
-  overflow: hidden;
+.numbers {
+  display: flex;
+  gap: 32px;
+  font-size: 1.1rem;
 }
 
-.progress-bar {
+.bar {
+  height: 6px;
+  background: #e5e7eb;
+  margin-top: 18px;
+}
+
+#progressBar {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), #ff6b6b);
-  transition: width .4s ease;
+  width: 0%;
+  background: var(--accent);
+  transition: width .3s ease;
 }
 
-/* SLOTS */
-#timeSlots {
+/* TIMES */
+.times {
   list-style: none;
   padding: 0;
+  max-width: 420px;
 }
 
-#timeSlots li {
-  padding: 10px 0;
-  border-bottom: 1px solid #20242c;
+.times li {
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
 }
 
-#timeSlots label {
+.times label {
   display: flex;
   align-items: center;
   gap: 12px;
   cursor: pointer;
 }
 
-#timeSlots input {
-  transform: scale(1.3);
-}
-
 /* FOOTER */
 footer {
-  text-align: center;
-  color: var(--muted);
-  margin-top: 40px;
+  margin-top: 120px;
   font-size: .8rem;
-  letter-spacing: .1em;
+  color: var(--muted);
 }
