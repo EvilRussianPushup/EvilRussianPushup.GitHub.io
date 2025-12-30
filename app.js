@@ -210,10 +210,12 @@ $(function () {
     }
     const items = slots.map(t => {
       const key = daySlotKey(today, t);
-      const checked = state.completedSlots.includes(key) ? 'checked' : '';
+      const isDone = state.completedSlots.includes(key);
       const reps = setSizeFrom(state.base, currentSchedule().effectivePct);
-      return `<li><label><input type="checkbox" data-time="${t}" ${checked}> <span class="slotTime">${t}</span> <span class="slotNote">~${reps} reps</span></label></li>`;
+
+      return `<li><label class="${isDone ? 'strike' : ''}"><input type="checkbox" data-time="${t}" ${isDone ? 'checked' : ''}><span class="slotTime">${t}</span><span class="slotNote">~${reps} reps</span></label></li>`;
     });
+
     $timeSlots.html(items.join(''));
   }
 
