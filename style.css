@@ -127,3 +127,32 @@ body.dark .btn {
 #timeSlots .slotTime { font-weight: 600; }
 #timeSlots .slotNote { font-size: 0.9rem; color: var(--muted); margin-left: auto; }
 .dark #timeSlots .slotNote { color: #bbb; }
+
+/* ====================== Strike-through animation ====================== */
+/*
+Source - https://stackoverflow.com/a
+Posted by Asons, modified by community.
+License - CC BY-SA 4.0
+*/
+
+@keyframes strike {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+.strike {
+  position: relative;
+  opacity: 0.7;
+}
+
+.strike::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 2px;
+  width: 0;
+  background: currentColor;
+  animation: strike 0.35s ease-out forwards;
+  pointer-events: none;
+}
