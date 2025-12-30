@@ -130,23 +130,25 @@ body.dark .btn {
 
 /* ====================== Strike-through ====================== */
 
-.done {
+/* ------------------- Strike-through for text only ------------------- */
+
+label.done span,
+label.just-done span {
   position: relative;
   opacity: 0.6;
 }
 
-.done::after {
+label.done span::after {
   content: '';
   position: absolute;
   top: 50%;
   left: 0;
-  height: 2px;
   width: 100%;
+  height: 2px;
   background: currentColor;
 }
 
-/* animation ONLY when first completed */
-.just-done::after {
+label.just-done span::after {
   width: 0;
   animation: strike 0.35s ease-out forwards;
 }
