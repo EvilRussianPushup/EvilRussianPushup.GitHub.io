@@ -13,6 +13,7 @@ body {
   font-family: system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
+  accent-color: var(--accent-2);
   transition: background .4s ease, color .4s ease;
 }
 
@@ -83,6 +84,7 @@ body.dark {
   --text: #f3f4f6;
   --muted: #9ca3af;
   --shadow: 0 16px 40px rgba(0,0,0,.6);
+  accent-color: var(--accent);
 }
 
 body.dark .form-control {
