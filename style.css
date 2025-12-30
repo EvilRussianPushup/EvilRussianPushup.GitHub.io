@@ -52,7 +52,7 @@ h1 { font-weight: 800; }
   border: 1px solid #e2e8f0;
 }
 
-.percent { font-weight: 800; color: var(--accent); }
+.percent { font-weight: 800; color: var(--accent-2); }
 
 .progress {
   height: 14px;
