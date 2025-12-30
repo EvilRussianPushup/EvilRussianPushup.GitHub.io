@@ -1,4 +1,6 @@
-/* ===================== Storage helpers ===================== */
+/* =========================================================
+   STORAGE HELPERS
+========================================================= */
 function setCookie(name, value, days) {
   try {
     const d = new Date();
@@ -12,12 +14,14 @@ function getCookie(name) {
     const row = document.cookie.split('; ').find(r => r.startsWith(name + '='));
     if (!row) return null;
     return JSON.parse(decodeURIComponent(row.split('=')[1]));
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
-function save(key, value) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
-  setCookie(key, value, 365);
+function save(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+  setCookie(key, val, 365);
 }
 
 function load(key, def) {
@@ -29,29 +33,43 @@ function load(key, def) {
   return c ?? def;
 }
 
-/* ===================== Schedule ===================== */
+/* =========================================================
+   SCHEDULE DATA
+========================================================= */
 const SCHEDULE = [
-  { label: 'Week 1 • Monday', pct: 1.0, every: null, note: 'Initial max test' },
+  { label: 'Week 1 • Monday', pct: 1.0, every: null, note: 'Initial max test. After testing, use 30% every 60 min.' },
   { label: 'Week 1 • Tuesday', pct: 0.5, every: 60 },
   { label: 'Week 1 • Wednesday', pct: 0.6, every: 45 },
   { label: 'Week 1 • Thursday', pct: 0.25, every: 60 },
   { label: 'Week 1 • Friday', pct: 0.45, every: 30 },
   { label: 'Week 1 • Saturday', pct: 0.4, every: 60 },
   { label: 'Week 1 • Sunday', pct: 0.2, every: 90 },
-  { label: 'Week 2 • Monday', pct: 1.0, every: null, note: 'Re-test max' }
+  { label: 'Week 2 • Monday', pct: 1.0, every: null, note: 'Re-test. Then 35% every 45 min.' },
+  { label: 'Week 2 • Tuesday', pct: 0.55, every: 20 },
+  { label: 'Week 2 • Wednesday', pct: 0.3, every: 15 },
+  { label: 'Week 2 • Thursday', pct: 0.65, every: 60 },
+  { label: 'Week 2 • Friday', pct: 0.35, every: 45 },
+  { label: 'Week 2 • Saturday', pct: 0.45, every: 60 },
+  { label: 'Week 2 • Sunday', pct: 0.25, every: 120 },
+  { label: 'Week 3 • Monday', pct: 1.0, every: null, note: 'Final test & re-plan.' }
 ];
 
-/* ===================== State ===================== */
+/* =========================================================
+   APP STATE (PERSISTED)
+========================================================= */
 const state = {
   base: load('erc_base', 10),
   startDate: load('erc_start', null),
   quietStart: load('erc_qstart', '22:00'),
   quietEnd: load('erc_qend', '07:00'),
   completedSlots: load('erc_completedSlots', []),
-  manualCompletions: load('erc_manual', 0)
+  manualCompletions: load('erc_manual', 0),
+  dark: load('erc_dark', false)
 };
 
-/* ===================== Utilities ===================== */
+/* =========================================================
+   UTILITIES
+========================================================= */
 const $ = id => document.getElementById(id);
 
 function todayKey() {
@@ -79,9 +97,17 @@ function daysBetween(a, b) {
   return Math.floor((d2 - d1) / 86400000);
 }
 
-/* ===================== Schedule Logic ===================== */
+function repsFrom(base, pct) {
+  return Math.max(1, Math.round(base * pct));
+}
+
+/* =========================================================
+   SCHEDULE LOGIC
+========================================================= */
 function currentSchedule() {
-  if (!state.startDate) return { every: 60, pct: 0.3, test: true };
+  if (!state.startDate) {
+    return { pct: 0.3, every: 60, test: true, label: '', note: '' };
+  }
 
   const idx = Math.min(
     SCHEDULE.length - 1,
@@ -89,9 +115,15 @@ function currentSchedule() {
   );
 
   const d = SCHEDULE[idx];
+
+  if (d.every === null) {
+    if (idx === 0) return { pct: 0.3, every: 60, test: true, label: d.label, note: d.note };
+    if (idx === 7) return { pct: 0.35, every: 45, test: true, label: d.label, note: d.note };
+  }
+
   return {
-    every: d.every,
     pct: d.pct,
+    every: d.every,
     test: d.every === null,
     label: d.label,
     note: d.note || ''
@@ -101,6 +133,7 @@ function currentSchedule() {
 function activeIntervals() {
   const qs = parseHM(state.quietStart);
   const qe = parseHM(state.quietEnd);
+
   if (qs === qe) return [{ start: 0, end: 1440 }];
 
   if (qs < qe) {
@@ -126,7 +159,60 @@ function generateSlotsForToday() {
   return [...slots].sort();
 }
 
-/* ===================== Rendering ===================== */
+/* =========================================================
+   COMPUTATIONS
+========================================================= */
+function expectedSetsToday() {
+  return generateSlotsForToday().length;
+}
+
+function completedToday() {
+  const today = todayKey();
+  return state.completedSlots.filter(k => k.startsWith(today)).length;
+}
+
+function computeNextDue() {
+  const now = new Date();
+  const today = todayKey();
+
+  for (const t of generateSlotsForToday()) {
+    const [h, m] = t.split(':').map(Number);
+    const dt = new Date();
+    dt.setHours(h, m, 0, 0);
+    if (dt <= now) continue;
+    if (!state.completedSlots.includes(daySlotKey(today, t))) return dt;
+  }
+  return null;
+}
+
+function formatCountdown(ms) {
+  if (ms <= 0) return 'Due now!';
+  const s = Math.floor(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return `${h ? h + ':' : ''}${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+
+/* =========================================================
+   WEEK OVERVIEW
+========================================================= */
+function prettyScheduleText() {
+  let out = '';
+  SCHEDULE.forEach(d => {
+    const day = d.label.split('•')[1].trim();
+    if (d.every) {
+      out += `${day}: ${Math.round(d.pct * 100)}% → ~${repsFrom(state.base, d.pct)} reps every ${d.every} min\n`;
+    } else {
+      out += `${day}: TEST DAY\n`;
+    }
+  });
+  return out;
+}
+
+/* =========================================================
+   RENDERING
+========================================================= */
 let slotsRendered = false;
 
 function renderSlots() {
@@ -134,11 +220,11 @@ function renderSlots() {
   if (!ul) return;
 
   const today = todayKey();
-  const reps = Math.max(1, Math.round(state.base * currentSchedule().pct));
+  const reps = repsFrom(state.base, currentSchedule().pct);
   const slots = generateSlotsForToday();
 
   if (!slots.length) {
-    ul.innerHTML = `<li class="text-muted">No sets today</li>`;
+    ul.innerHTML = '<li class="text-muted">No scheduled sets today</li>';
     return;
   }
 
@@ -149,8 +235,8 @@ function renderSlots() {
       <li>
         <label class="${done ? 'strike' : ''}">
           <input type="checkbox" data-time="${t}" ${done ? 'checked' : ''}>
-          <span>${t}</span>
-          <span>~${reps} reps</span>
+          <span class="slotTime">${t}</span>
+          <span class="slotNote">~${reps} reps</span>
         </label>
       </li>
     `;
@@ -163,27 +249,54 @@ function refreshUI() {
   const cs = currentSchedule();
 
   if ($('base')) $('base').value = state.base;
-  if ($('setsToday')) $('setsToday').textContent =
-    state.completedSlots.filter(s => s.startsWith(todayKey())).length
-    + state.manualCompletions;
+  if ($('quietStart')) $('quietStart').value = state.quietStart;
+  if ($('quietEnd')) $('quietEnd').value = state.quietEnd;
+  if ($('start')) $('start').value = state.startDate;
+
+  if ($('dayLabel')) $('dayLabel').textContent = cs.label.split('•')[1]?.trim() || '';
+  if ($('todayPercent')) $('todayPercent').textContent = `${Math.round(cs.pct * 100)}%`;
+  if ($('todayEvery')) $('todayEvery').textContent = cs.every ?? '—';
+  if ($('todayReps')) $('todayReps').textContent = repsFrom(state.base, cs.pct);
+  if ($('todayNote')) $('todayNote').textContent = cs.note || '';
+
+  const sets = completedToday() + state.manualCompletions;
+  if ($('setsToday')) $('setsToday').textContent = sets;
+  if ($('repsToday')) $('repsToday').textContent = sets * repsFrom(state.base, cs.pct);
+
+  const expected = expectedSetsToday();
+  const pct = expected ? Math.min(100, Math.round((sets / expected) * 100)) : 0;
+  if ($('progressBar')) $('progressBar').style.width = pct + '%';
+
+  if ($('schedulePreview')) $('schedulePreview').textContent = prettyScheduleText();
+
+  const next = computeNextDue();
+  if ($('nextDue')) {
+    $('nextDue').textContent = next ? formatCountdown(next - new Date()) : 'No more sets today';
+  }
 
   if (!slotsRendered) renderSlots();
 }
 
-/* ===================== Events ===================== */
+/* =========================================================
+   EVENTS
+========================================================= */
 document.addEventListener('change', e => {
-  if (e.target.matches('#base')) {
+  if (e.target.id === 'base') {
     state.base = Math.max(1, +e.target.value);
     save('erc_base', state.base);
     slotsRendered = false;
-    refreshUI();
   }
 
-  if (e.target.matches('#quietStart, #quietEnd')) {
+  if (e.target.id === 'quietStart' || e.target.id === 'quietEnd') {
     state[e.target.id] = e.target.value;
     save(`erc_${e.target.id}`, e.target.value);
     slotsRendered = false;
-    refreshUI();
+  }
+
+  if (e.target.id === 'start') {
+    state.startDate = e.target.value;
+    save('erc_start', state.startDate);
+    slotsRendered = false;
   }
 
   if (e.target.matches('input[type="checkbox"][data-time]')) {
@@ -195,15 +308,35 @@ document.addEventListener('change', e => {
     }
     save('erc_completedSlots', state.completedSlots);
     slotsRendered = false;
+  }
+
+  refreshUI();
+});
+
+document.addEventListener('click', e => {
+  if (e.target.id === 'markDone') {
+    state.manualCompletions++;
+    save('erc_manual', state.manualCompletions);
     refreshUI();
+  }
+
+  if (e.target.id === 'darkToggle') {
+    state.dark = !state.dark;
+    document.body.classList.toggle('dark', state.dark);
+    save('erc_dark', state.dark);
   }
 });
 
+/* =========================================================
+   INIT
+========================================================= */
 document.addEventListener('DOMContentLoaded', () => {
   if (!state.startDate) {
     state.startDate = todayKey();
     save('erc_start', state.startDate);
   }
+
+  document.body.classList.toggle('dark', state.dark);
   refreshUI();
   setInterval(refreshUI, 1000);
 });
