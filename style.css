@@ -120,3 +120,12 @@ body.dark .btn {
   border: none;
   color: #111;
 }
+
+/* ====================== Scheduled Slots ====================== */
+#timeSlots { padding-left: 0; }
+#timeSlots li { margin-bottom: 6px; }
+#timeSlots label { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+#timeSlots input[type="checkbox"] { margin-right: 10px; transform: scale(1.2); }
+#timeSlots .slotTime { font-weight: 600; }
+#timeSlots .slotNote { font-size: 0.9rem; color: var(--muted); margin-left: auto; }
+.dark #timeSlots .slotNote { color: #bbb; }
