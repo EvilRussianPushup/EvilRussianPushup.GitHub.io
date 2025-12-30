@@ -355,18 +355,65 @@ $(function () {
     refreshUI();
   });
 
-  // delegated checkbox handler
-  $timeSlots.on('change', 'input[type="checkbox"]', function () {
-    const t = $(this).data('time');
-    const key = daySlotKey(todayKey(), t);
-    if (this.checked) {
-      if (!state.completedSlots.includes(key)) state.completedSlots.push(key);
-    } else {
-      state.completedSlots = state.completedSlots.filter(k => k !== key);
-    }
-    save('erc_completedSlots', state.completedSlots);
-    refreshUI();
+  /* ------------------- Strike-through animation state ------------------- */
+let justCompleted = null; // temporary animation flag
+
+/* ------------------- Render time slots (with animation) ------------------- */
+function renderTimeSlots() {
+  const today = todayKey();
+  const slots = generateSlotsForToday();
+  if (!Array.isArray(slots) || slots.length === 0) {
+    $timeSlots.html('<li class="text-muted">No scheduled sets today (test day or quiet hours)</li>');
+    return;
+  }
+
+  const cs = currentSchedule();
+  const items = slots.map(t => {
+    const key = daySlotKey(today, t);
+    const reps = setSizeFrom(state.base, cs.effectivePct);
+    const isDone = state.completedSlots.includes(key);
+    const isJustDone = key === justCompleted;
+
+    const classes = [
+      isDone ? 'done' : '',
+      isJustDone ? 'just-done' : ''
+    ].join(' ');
+
+    return `
+      <li>
+        <label class="${classes}">
+          <input type="checkbox" data-time="${t}" ${isDone ? 'checked' : ''}>
+          <span class="slotTime">${t}</span>
+          <span class="slotNote">~${reps} reps</span>
+        </label>
+      </li>
+    `;
   });
+
+  $timeSlots.html(items.join(''));
+
+  // clear justCompleted flag after rendering once
+  justCompleted = null;
+}
+
+/* ------------------- Checkbox change handler ------------------- */
+$timeSlots.on('change', 'input[type="checkbox"]', function () {
+  const t = $(this).data('time');
+  const key = daySlotKey(todayKey(), t);
+
+  if (this.checked) {
+    if (!state.completedSlots.includes(key)) {
+      state.completedSlots.push(key);
+      justCompleted = key; // trigger animation
+    }
+  } else {
+    state.completedSlots = state.completedSlots.filter(k => k !== key);
+  }
+
+  save('erc_completedSlots', state.completedSlots);
+  refreshUI();
+});
+
 
   // initial fill of input fields (values persisted)
   if ($base.length) $base.val(state.base);
