@@ -65,9 +65,7 @@ h1 { font-weight: 800; }
 }
 
 pre {
-  background: rgba(0,0,0,.04);
   padding: 16px;
-  border-radius: 14px;
 }
 
 .muted { color: var(--muted); }
